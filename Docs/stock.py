@@ -1,10 +1,13 @@
 import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
+from keras.layers import LSTM, Dense, Dropout
+from keras.models import Sequential
+
+epoch_num = 100
 
 dataset_train = pd.read_csv("Google_Stock_Price_Train.csv")
 dataset_test = pd.read_csv("Google_Stock_Price_Test.csv")
@@ -36,7 +39,7 @@ regressor.add(Dropout(0.2))
 regressor.add(Dense(units=1))
 regressor.compile(optimizer='adam', loss='mean_squared_error')
 
-regressor.fit(X_train, y_train, epochs=100, batch_size=32)
+regressor.fit(X_train, y_train, epochs=epoch_num, batch_size=32)
 
 test_set = dataset_test.iloc[:, 1:2].values
 
