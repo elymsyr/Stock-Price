@@ -73,26 +73,17 @@ def create_lstm_model(neurons=64, loss='mean_squared_error', activation='linear'
 param_grid = {
     'model__optimizer': ['adam'], #  'RMSprop', 
     'model__loss': ['mean_squared_error'],
-    'batch_size': [6],
-    'epochs': [1],
-    'model__neurons': [64, 128],
-    'model__activation': ['linear'] # 'relu', 'tanh', 'sigmoid', 
-}
-
-param_grid = {
-    'model__optimizer': ['adam'], #  'RMSprop', 
-    'model__loss': ['mean_squared_error'],
-    'batch_size': [6],
-    'epochs': [1],
+    'batch_size': [1],
+    'epochs': [1, 5],
     'model__neurons': [64, 128],
     'model__activation': ['linear'] # 'relu', 'tanh', 'sigmoid', 
 }
 
 
 
-lstm_regressor = KerasRegressor(model=create_lstm_model, batch_size=1, epochs=1, verbose=1)
+lstm_regressor = KerasRegressor(model=create_lstm_model, verbose=1)
 # Create the GridSearchCV object
-grid_search = GridSearchCV(estimator=lstm_regressor, param_grid=param_grid, scoring='neg_mean_absolute_error', error_score='raise', cv=3)
+grid_search = GridSearchCV(estimator=lstm_regressor, param_grid=param_grid, scoring='neg_mean_absolute_error', error_score='raise', cv=5)
 # Fit the grid search to the data
 grid_search.fit(X_train, Y_train[:, target_column_index].reshape(-1,1))
 
