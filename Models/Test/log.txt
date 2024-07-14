@@ -1,0 +1,7 @@
+Train Results with Epoch - 100:
+    Layers: [256, 256]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 3.5446, Test MSE: 2457.8925
+    Train R2 Score: 0.7653, Test R2 Score: 0.2886
+

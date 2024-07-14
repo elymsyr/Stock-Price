@@ -1,0 +1,138 @@
+Train 715957: 
+  Order : 0
+  Train Results with Epoch - 50:
+    Layers: [256, 256]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 43.1783, Test MSE: 209.7157
+    Train R2 Score: 0.9754, Test R2 Score: 0.3342
+
+  Order : 2
+  Train Results with Epoch - 50:
+    Layers: [256, 128]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 83.2771, Test MSE: 589.6150
+    Train R2 Score: 0.9525, Test R2 Score: -0.8720
+
+  Order : 3
+  Train Results with Epoch - 50:
+    Layers: [128, 128]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 66.5234, Test MSE: 410.6176
+    Train R2 Score: 0.9620, Test R2 Score: -0.3037
+
+  Order : 4
+  Train Results with Epoch - 50:
+    Layers: [256, 64]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 45.7512, Test MSE: 249.9880
+    Train R2 Score: 0.9739, Test R2 Score: 0.2063
+
+  Order : 5
+  Train Results with Epoch - 50:
+    Layers: [256]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 75.7580, Test MSE: 558.9272
+    Train R2 Score: 0.9568, Test R2 Score: -0.7746
+
+  Order : 6
+  Train Results with Epoch - 50:
+    Layers: [64]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 69.8979, Test MSE: 478.3757
+    Train R2 Score: 0.9601, Test R2 Score: -0.5188
+
+  Order : 7
+  Train Results with Epoch - 50:
+    Layers: [64, 128]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 67.2841, Test MSE: 383.5865
+    Train R2 Score: 0.9616, Test R2 Score: -0.2179
+
+  Order : 8
+  Train Results with Epoch - 50:
+    Layers: [64]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 60.4895, Test MSE: 387.5400
+    Train R2 Score: 0.9655, Test R2 Score: -0.2304
+
+  Order : 9
+  Train Results with Epoch - 50:
+    Layers: [64, 64]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 75.3613, Test MSE: 546.3311
+    Train R2 Score: 0.9570, Test R2 Score: -0.7346
+
+  Order : 10
+  Train Results with Epoch - 50:
+    Layers: [128, 128]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 90.6074, Test MSE: 580.9121
+    Train R2 Score: 0.9483, Test R2 Score: -0.8444
+    
+Train 412418: 
+  Order : 0
+  Train Results with Epoch - 50:
+    Layers: [256, 256]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 82.6835, Test MSE: 550.5987
+    Train R2 Score: 0.9528, Test R2 Score: -0.7481
+
+  Order : 1
+  Train Results with Epoch - 50:
+    Layers: [128, 128]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 76.6856, Test MSE: 438.8297
+    Train R2 Score: 0.9562, Test R2 Score: -0.3933
+
+  Order : 2
+  Train Results with Epoch - 100:
+    Layers: [256, 256]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 82.5702, Test MSE: 555.8378
+    Train R2 Score: 0.9529, Test R2 Score: -0.7647
+
+  Order : 3
+  Train Results with Epoch - 50:
+    Layers: [256, 256, 256]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 90.0593, Test MSE: 551.4548
+    Train R2 Score: 0.9486, Test R2 Score: -0.7508
+
+  Order : 4
+  Train Results with Epoch - 50:
+    Layers: [256, 256, 128]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 60.9784, Test MSE: 535.2476
+    Train R2 Score: 0.9652, Test R2 Score: -0.6994
+
+  Order : 5
+  Train Results with Epoch - 50:
+    Layers: [512]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 87.1164, Test MSE: 541.8202
+    Train R2 Score: 0.9503, Test R2 Score: -0.7202
+
+  Order : 6
+  Train Results with Epoch - 50:
+    Layers: [512, 512]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Train MSE: 77.9498, Test MSE: 437.9906
+    Train R2 Score: 0.9555, Test R2 Score: -0.3906
+

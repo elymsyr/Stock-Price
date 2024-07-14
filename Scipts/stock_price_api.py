@@ -1,21 +1,60 @@
-import requests
-from json import dumps
+from eodhd import APIClient
+from APIKEY import API
+from datetime import datetime, timedelta
+import pandas as pd
 
-key = "OE75KP9T13V2PB59"
 
-# replace the "demo" apikey below with your own key from https://www.alphavantage.co/support/#api-key
-url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AAPL&apikey={key}'
-response = requests.get(url)
-
-# Check if the request was successful
-if response.status_code == 200:
-    # Extract the JSON content from the response
-    data = response.json()
+def get_data(stock: str = 'AAPL', symbol: str = 'US', period: str = 'd', from_date = None, to_date = None, day_before: int = 20):
+    current_date = datetime.now()
+    formatted_current_date = current_date.strftime('%Y-%m-%d')
+    date_10_days_before = current_date - timedelta(days=day_before)
+    formatted_date_10_days_before = date_10_days_before.strftime('%Y-%m-%d')
+    if from_date is None: from_date = formatted_date_10_days_before
+    if to_date is None: to_date = formatted_current_date
     
-    # Serialize the JSON content with pretty printing
-    pretty_data = dumps(data, indent=4)
+    print(from_date, to_date)
     
-    # Print the pretty JSON data
-    print(pretty_data)
-else:
-    print(f"Failed to retrieve data. Status code: {response.status_code}")
+    api = APIClient(API)
+
+    resp = api.get_eod_historical_stock_market_data(symbol = f'{stock}.{symbol}', period=period, from_date = from_date, to_date = to_date, order='a')
+
+    data_dict = {}
+
+    for item in resp:
+        data_dict[item.pop('date')] = item
+
+    print(data_dict)
+    return data_dict
+
+def format_data(data:dict):
+    df = pd.DataFrame.from_dict(data, orient='index')
+    df.columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+    df.index = pd.to_datetime(df.index)
+    df = df.sort_index()
+    return df
+
+
+# import requests, re
+# import yfinance as yf
+# from APIKEY import API_KEY
+
+
+# def get_data(symbol: str = 'AAPL', function: str = 'TIME_SERIES_DAILY_ADJUSTED', api_key: str = API_KEY):
+#     # replace the "demo" apikey below with your own key from https://www.alphavantage.co/support/#api-key
+#     url = f'https://www.alphavantage.co/query?function={function}&symbol={symbol}&apikey={api_key}'
+#     response = requests.get(url)
+#     return response.json() if response.status_code == 200 else None, response.status_code
+
+
+# msft = yf.Ticker("MSFT")
+
+# # get all stock info
+# print(msft.info)
+
+# # get historical market data
+# hist = msft.history(period="1mo")
+
+# # show meta information about the history (requires history() to be called first)
+# print(msft.history_metadata)
+
+# print(hist)
