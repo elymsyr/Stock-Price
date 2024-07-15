@@ -62,7 +62,7 @@ def get_df_from_url() -> pd.DataFrame|None:
     return None
     
 
-def get_df(path:str="Data/AAPL_stock_prices.csv", delimeter: str = ',', from_end: bool = True, date_column: str = 'Date', target_column: str = 'Close') -> tuple[np.ndarray, MinMaxScaler, int]:
+def get_df(path:str="Data/AAPL_stock_prices.csv", delimeter: str = ',', from_end: bool = True, date_column: str = 'Date', target_column: str = 'Close') -> tuple[np.ndarray, MinMaxScaler, int, pd.DataFrame]:
     df: pd.DataFrame | None= get_df_from_url()
     if df is None:
         df = pd.read_csv(path, delimiter=delimeter)
@@ -78,9 +78,9 @@ def get_df(path:str="Data/AAPL_stock_prices.csv", delimeter: str = ',', from_end
     except:
         scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(df)
-    return scaled_data, scaler, target_column_index
+    return scaled_data, scaler, target_column_index, df
 
-scaled_data, scaler, target_column_index = get_df()
+scaled_data, scaler, target_column_index, df = get_df()
 
 # %%
 def create_dataset(data: np.ndarray, time_step: int=10):
@@ -170,14 +170,14 @@ def log(epoch, layers_with_units, optimizer, loss, train_mse = None, train_r2 = 
     current_datetime = datetime.now()
     current_datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")    
     with open('log.txt', 'a') as file:
-        file.write(f"Train Results at {current_datetime_str} with Epoch - {epoch}:")        
+        file.write(f"Train Results at {current_datetime_str} with Epoch - {epoch} for {len(df)} data:")        
         file.write(f"\n    Layers: {layers_with_units}")
         file.write(f"\n    Optimizer : {optimizer}")
         file.write(f"\n    Loss: {loss}")
         file.write(f"\n    Evaluations -> Loss_{loss_eval} Mae_{mae}")
         file.write(f"\n    Train MSE: {train_mse:.4f}, Test MSE: {test_mse:.4f}")
         file.write(f"\n    Train R2 Score: {train_r2:.4f}, Test R2 Score: {test_r2:.4f}\n\n")
-    return f"Train Results at {current_datetime_str} with Epoch - {epoch}:\n    Layers: {layers_with_units}\n    Optimizer : {optimizer}\n    Loss: {loss}\n    Evaluations -> Loss_{loss_eval} Mae_{mae}\n    Train MSE: {train_mse:.4f}, Test MSE: {test_mse:.4f}\n    Train R2 Score: {train_r2:.4f}, Test R2 Score: {test_r2:.4f}"
+    return f"Train Results at {current_datetime_str} with Epoch - {epoch} for {len(df)} data::\n    Layers: {layers_with_units}\n    Optimizer : {optimizer}\n    Loss: {loss}\n    Evaluations -> Loss_{loss_eval} Mae_{mae}\n    Train MSE: {train_mse:.4f}, Test MSE: {test_mse:.4f}\n    Train R2 Score: {train_r2:.4f}, Test R2 Score: {test_r2:.4f}"
 
 # %%
 log_text = log(epoch=EPOCH, layers_with_units=LAYERS, optimizer=OPTIMIZER, loss=LOSS, train_mse=train_mse, train_r2=train_r2)

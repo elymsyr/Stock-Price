@@ -164,3 +164,11 @@ Train Results at 2024-07-16 01:54:53 with Epoch - 1:
     Train MSE: 12.3887, Test MSE: 10.9171
     Train R2 Score: 0.9939, Test R2 Score: 0.9945
 
+Train Results at 2024-07-16 02:03:53 with Epoch - 1 for 10959 data:
+    Layers: [256, 256]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Evaluations -> Loss_0.007825188338756561 Mae_0.007825188338756561
+    Train MSE: 93.8293, Test MSE: 86.6952
+    Train R2 Score: 0.9539, Test R2 Score: 0.9564
+
