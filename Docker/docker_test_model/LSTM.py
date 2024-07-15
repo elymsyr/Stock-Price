@@ -160,9 +160,9 @@ test_mse = mean_squared_error(Y_test[:, target_column_index].reshape(-1, 1), tes
 train_r2 = r2_score(Y_train[:, target_column_index].reshape(-1, 1), train_predict)
 test_r2 = r2_score(Y_test[:, target_column_index].reshape(-1, 1), test_predict)
 
-print(f"Train MSE: {train_mse:.4f}, Test MSE: {test_mse:.4f}")
+print(f"\nTrain MSE: {train_mse:.4f}, Test MSE: {test_mse:.4f}")
 print(f"Train R2 Score: {train_r2:.4f}, Test R2 Score: {test_r2:.4f}")
-print(f"\nTrue - Y_train[5:10, target_column_index].reshape(-1, 1)\n{Y_train[5:10, target_column_index].reshape(-1, 1)}\n\nPredicted - train_predict[5:10]\n{train_predict[5:10]}")
+print(f"\nTrue - Y_train[5:10, target_column_index].reshape(-1, 1)\n{Y_train[5:10, target_column_index].reshape(-1, 1)}\n\nPredicted - train_predict[5:10]\n{train_predict[5:10]}\n")
 
 # %%
 from datetime import datetime
