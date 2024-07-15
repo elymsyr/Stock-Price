@@ -136,3 +136,31 @@ Train 412418:
     Train MSE: 77.9498, Test MSE: 437.9906
     Train R2 Score: 0.9555, Test R2 Score: -0.3906
 
+Train Results at 2024-07-16 01:50:09 with Epoch - 1:Train Results at 2024-07-16 01:51:43 with Epoch - 1:Train Results at 2024-07-16 01:52:41 with Epoch - 1:Train Results at 2024-07-16 01:53:20 with Epoch - 1:
+Y_True:
+[[  0.31919599]
+ [  0.25803599]
+ [ 19.32071495]
+ [150.72000122]
+ [146.13999939]]
+Y_Predicted
+[[  4.09532072]
+ [  4.03626077]
+ [ 23.11618089]
+ [138.04949556]
+ [140.82018741]]
+    Layers: [256, 256]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Evaluations -> Loss_0.008835488930344582 Mae_0.008835488930344582
+    Train MSE: 20.6453, Test MSE: 18.5301
+    Train R2 Score: 0.9899, Test R2 Score: 0.9907
+
+Train Results at 2024-07-16 01:54:53 with Epoch - 1:
+    Layers: [256, 256]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Evaluations -> Loss_0.008961093612015247 Mae_0.008961093612015247
+    Train MSE: 12.3887, Test MSE: 10.9171
+    Train R2 Score: 0.9939, Test R2 Score: 0.9945
+
