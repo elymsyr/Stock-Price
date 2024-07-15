@@ -27,3 +27,11 @@ Train Results with Epoch - 50:
     Train MSE: 76.5495, Test MSE: 72.4449
     Train R2 Score: 0.9646, Test R2 Score: 0.9642
 
+Train Results with Epoch - 10:
+    Layers: [256, 256]
+    Optimizer : adam
+    Loss: mean_squared_error
+    Evaluations -> Loss_0.009457116946578026 Mae_0.009457116946578026
+    Train MSE: 86.7384, Test MSE: 82.1238
+    Train R2 Score: 0.9599, Test R2 Score: 0.9594
+
