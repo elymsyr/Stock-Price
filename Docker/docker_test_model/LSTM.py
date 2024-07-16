@@ -10,6 +10,15 @@ from sklearn.model_selection import train_test_split
 from keras.src.layers import LSTM, Dense
 import joblib
 
+URL = None
+DATA_SIZE = None
+EPOCH = None
+BATCH_SIZE = None
+LAYERS = None
+OPTIMIZER = None
+LOSS = None
+METRICS = None
+
 #%% 
 parser = argparse.ArgumentParser(description='Process some parameters.')
 parser.add_argument('--epoch', type=int, default=50, help='Number of epochs')
@@ -43,6 +52,8 @@ print(f"METRICS: {METRICS}")
 
 
 # %%
+URL = 'https://raw.githubusercontent.com/elymsyr/Stock-Price/main/Data/AAPL_stock_prices.csv'
+
 def get_df_from_url() -> pd.DataFrame|None:
     if URL != None:
         response = requests.get(URL)
@@ -61,7 +72,7 @@ def get_df_from_url() -> pd.DataFrame|None:
             print(f"Failed to download CSV file from {URL}. Status code: {response.status_code}")
     return None
     
-
+# %%
 def get_df(delimeter: str = ',', from_end: bool = True, date_column: str = 'Date', target_column: str = 'Close') -> tuple[np.ndarray, MinMaxScaler, int, pd.DataFrame]:
     df: pd.DataFrame | None= get_df_from_url()
     if df is None:
@@ -80,6 +91,7 @@ def get_df(delimeter: str = ',', from_end: bool = True, date_column: str = 'Date
     scaled_data = scaler.fit_transform(df)
     return scaled_data, scaler, target_column_index, df
 
+# %%
 scaled_data, scaler, target_column_index, df = get_df()
 
 # %%
