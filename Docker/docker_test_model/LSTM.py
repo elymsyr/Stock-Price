@@ -183,7 +183,7 @@ def run_model_train():
     joblib.dump(scaler, 'scaler.gz')
     model.save('lstm_model_test.keras')
     model.save('lstm_model_test.h5')
-    print('\n\nCOMPLETED\n\n')
+    return 1
     
 # %%
 run_model_train()
