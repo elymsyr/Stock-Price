@@ -62,10 +62,10 @@ def get_df_from_url() -> pd.DataFrame|None:
     return None
     
 
-def get_df(path:str="Data/AAPL_stock_prices.csv", delimeter: str = ',', from_end: bool = True, date_column: str = 'Date', target_column: str = 'Close') -> tuple[np.ndarray, MinMaxScaler, int, pd.DataFrame]:
+def get_df(delimeter: str = ',', from_end: bool = True, date_column: str = 'Date', target_column: str = 'Close') -> tuple[np.ndarray, MinMaxScaler, int, pd.DataFrame]:
     df: pd.DataFrame | None= get_df_from_url()
     if df is None:
-        df = pd.read_csv(path, delimiter=delimeter)
+        exit(code=99)
     if DATA_SIZE != None:
         df = df.iloc[-DATA_SIZE:, :] if from_end else df.iloc[:DATA_SIZE, :]
     dates = pd.to_datetime(df[date_column])
