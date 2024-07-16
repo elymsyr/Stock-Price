@@ -10,6 +10,9 @@ from sklearn.model_selection import train_test_split
 from keras.src.layers import LSTM, Dense
 import joblib
 
+# URL = 'https://raw.githubusercontent.com/elymsyr/Stock-Price/main/Data/AAPL_stock_prices.csv'
+
+# %%
 URL = None
 DATA_SIZE = None
 EPOCH = None
@@ -50,10 +53,7 @@ print(f"OPTIMIZER: {OPTIMIZER}")
 print(f"LOSS: {LOSS}")
 print(f"METRICS: {METRICS}")
 
-
 # %%
-URL = 'https://raw.githubusercontent.com/elymsyr/Stock-Price/main/Data/AAPL_stock_prices.csv'
-
 def get_df_from_url() -> pd.DataFrame|None:
     if URL != None:
         response = requests.get(URL)
@@ -92,9 +92,6 @@ def get_df(delimeter: str = ',', from_end: bool = True, date_column: str = 'Date
     return scaled_data, scaler, target_column_index, df
 
 # %%
-scaled_data, scaler, target_column_index, df = get_df()
-
-# %%
 def create_dataset(data: np.ndarray, time_step: int=10):
     X, Y = [], []
     for i in range(len(data) - time_step):
@@ -116,14 +113,6 @@ def create_dataset(data: np.ndarray, time_step: int=10):
         Y.append(seq_y)
     return np.array(X), np.array(Y), data.shape[1], time_step
 
-
-X, Y, feature_number, time_step = create_dataset(data=scaled_data)
-
-# %%
-# Split the data: 70% training, 15% validation, 15% testing
-X_train, X_temp, Y_train, Y_temp = train_test_split(X, Y, test_size=0.3, random_state=42)
-X_val, X_test, Y_val, Y_test = train_test_split(X_temp, Y_temp, test_size=0.5, random_state=42)
-
 # %%
 def create_model(input_shape: tuple, layers_with_units: list[int] = [128,128,64], optimizer: str = 'adam', loss: str = 'mean_squared_error', metrics: list[str]=['mse', 'mape']) -> Sequential:
     # Create the LSTM model
@@ -136,21 +125,6 @@ def create_model(input_shape: tuple, layers_with_units: list[int] = [128,128,64]
     return model
 
 # %%
-model = create_model(input_shape=(X_train.shape[1], feature_number), layers_with_units=LAYERS, optimizer=OPTIMIZER, loss=LOSS, metrics=METRICS)
-
-# %%
-# Train the model
-history = model.fit(X_train, Y_train, validation_data=(X_test, Y_test), epochs=EPOCH, batch_size=BATCH_SIZE, verbose=1) #type:ignore
-
-# %%
-loss_eval, mae = model.evaluate(X_val, Y_val)
-
-# %%
-# Make predictions
-train_predict = model.predict(X_train)
-test_predict = model.predict(X_test)
-
-# %%
 # Inverse transform the predictions
 def update_data_to_inverse(predicted_data: np.ndarray, scaler: MinMaxScaler, target_column_index: int, feature_number: int):
     new_dataset = np.zeros(shape=(len(predicted_data), feature_number))
@@ -158,27 +132,9 @@ def update_data_to_inverse(predicted_data: np.ndarray, scaler: MinMaxScaler, tar
     return scaler.inverse_transform(new_dataset)[:, target_column_index].reshape(-1, 1)
 
 # %%
-train_predict = update_data_to_inverse(predicted_data=train_predict, scaler=scaler, target_column_index=target_column_index, feature_number=feature_number)
-test_predict = update_data_to_inverse(predicted_data=test_predict, scaler=scaler, target_column_index=target_column_index, feature_number=feature_number)
-Y_train = scaler.inverse_transform(Y_train)
-Y_test = scaler.inverse_transform(Y_test)
 
-# %%
-# Calculate MSE
-train_mse = mean_squared_error(Y_train[:, target_column_index].reshape(-1, 1), train_predict)
-test_mse = mean_squared_error(Y_test[:, target_column_index].reshape(-1, 1), test_predict)
-
-# Calculate R2 score
-train_r2 = r2_score(Y_train[:, target_column_index].reshape(-1, 1), train_predict)
-test_r2 = r2_score(Y_test[:, target_column_index].reshape(-1, 1), test_predict)
-
-print(f"\nTrain MSE: {train_mse:.4f}, Test MSE: {test_mse:.4f}")
-print(f"Train R2 Score: {train_r2:.4f}, Test R2 Score: {test_r2:.4f}")
-print(f"\nTrue - Y_train[5:10, target_column_index].reshape(-1, 1)\n{Y_train[5:10, target_column_index].reshape(-1, 1)}\n\nPredicted - train_predict[5:10]\n{train_predict[5:10]}\n")
-
-# %%
-from datetime import datetime
-def log(epoch, layers_with_units, optimizer, loss, train_mse = None, train_r2 = None):
+def log(epoch, layers_with_units, optimizer, loss_eval, loss, mae, test_mse, test_r2, df, train_mse = None, train_r2 = None):
+    from datetime import datetime
     current_datetime = datetime.now()
     current_datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")    
     with open('log.txt', 'a') as file:
@@ -192,19 +148,42 @@ def log(epoch, layers_with_units, optimizer, loss, train_mse = None, train_r2 = 
     return f"Train Results at {current_datetime_str} with Epoch - {epoch} for {len(df)} data::\n    Layers: {layers_with_units}\n    Optimizer : {optimizer}\n    Loss: {loss}\n    Evaluations -> Loss_{loss_eval} Mae_{mae}\n    Train MSE: {train_mse:.4f}, Test MSE: {test_mse:.4f}\n    Train R2 Score: {train_r2:.4f}, Test R2 Score: {test_r2:.4f}"
 
 # %%
-log_text = log(epoch=EPOCH, layers_with_units=LAYERS, optimizer=OPTIMIZER, loss=LOSS, train_mse=train_mse, train_r2=train_r2)
-print(log_text)
+def run_model_train():
+    scaled_data, scaler, target_column_index, df = get_df()
+    X, Y, feature_number, time_step = create_dataset(data=scaled_data)
+    # Split the data: 70% training, 15% validation, 15% testing
+    X_train, X_temp, Y_train, Y_temp = train_test_split(X, Y, test_size=0.3, random_state=42)
+    X_val, X_test, Y_val, Y_test = train_test_split(X_temp, Y_temp, test_size=0.5, random_state=42)
 
-# %%
-print(f"{time_step=}, {X.shape=}, {(len(train_predict) + time_step)=}")
-print(f"{test_predict.shape=}, {train_predict.shape=}, {scaled_data.shape=}")
+    model = create_model(input_shape=(X_train.shape[1], feature_number), layers_with_units=LAYERS, optimizer=OPTIMIZER, loss=LOSS, metrics=METRICS) # type: ignore
+    # Train the model
+    history = model.fit(X_train, Y_train, validation_data=(X_test, Y_test), epochs=EPOCH, batch_size=BATCH_SIZE, verbose=1) #type:ignore
+    loss_eval, mae = model.evaluate(X_val, Y_val)
+    train_predict = model.predict(X_train)
+    test_predict = model.predict(X_test)
+    # Predict
+    train_predict = update_data_to_inverse(predicted_data=train_predict, scaler=scaler, target_column_index=target_column_index, feature_number=feature_number)
+    test_predict = update_data_to_inverse(predicted_data=test_predict, scaler=scaler, target_column_index=target_column_index, feature_number=feature_number)
+    Y_train = scaler.inverse_transform(Y_train)
+    Y_test = scaler.inverse_transform(Y_test)
 
-# %%
-joblib.dump(scaler, 'scaler.gz')
+    # Calculate MSE
+    train_mse = mean_squared_error(Y_train[:, target_column_index].reshape(-1, 1), train_predict)
+    test_mse = mean_squared_error(Y_test[:, target_column_index].reshape(-1, 1), test_predict)
 
+    # Calculate R2 score
+    train_r2 = r2_score(Y_train[:, target_column_index].reshape(-1, 1), train_predict)
+    test_r2 = r2_score(Y_test[:, target_column_index].reshape(-1, 1), test_predict)
+    
+    log_text = log(epoch=EPOCH, layers_with_units=LAYERS, optimizer=OPTIMIZER, loss=LOSS, train_mse=train_mse, train_r2=train_r2,loss_eval = loss_eval ,mae = mae ,test_mse = test_mse ,test_r2 = test_r2 ,df = df)
+    print(log_text)
+    
+    print(f"{time_step=}, {X.shape=}, {(len(train_predict) + time_step)=}")
+    print(f"{test_predict.shape=}, {train_predict.shape=}, {scaled_data.shape=}")
+    joblib.dump(scaler, 'scaler.gz')
+    model.save('lstm_model_test.keras')
+    model.save('lstm_model_test.h5')
+    print('\n\nCOMPLETED\n\n')
+    
 # %%
-model.save('lstm_model_test.keras')
-model.save('lstm_model_test.h5')
-
-# %%
-print('\n\nCOMPLETED\n\n')
+run_model_train()
