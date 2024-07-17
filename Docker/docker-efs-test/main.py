@@ -1,15 +1,17 @@
 # %%
 import numpy as np
+import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
-from keras.models import load_model
+from keras.models import load_model # type: ignore
 import joblib
 from eodhd import APIClient
 from datetime import datetime, timedelta
-API = "6692ff520ca5b8.24552354"
+from datetime import datetime
+API =  "6692ff520ca5b8.24552354" # eodhd
 
-
-def get_data(stock: str = 'AAPL', symbol: str = 'US', period: str = 'd', from_date = None, to_date = None, day_before: int = 20):
+# %%
+def get_data(stock: str = 'AAPL', symbol: str = 'US', period: str = 'd', from_date = None, to_date = None, day_before: int = 20, order='a'):
     current_date = datetime.now()
     formatted_current_date = current_date.strftime('%Y-%m-%d')
     date_10_days_before = current_date - timedelta(days=day_before)
@@ -21,7 +23,7 @@ def get_data(stock: str = 'AAPL', symbol: str = 'US', period: str = 'd', from_da
     
     api = APIClient(API)
 
-    resp = api.get_eod_historical_stock_market_data(symbol = f'{stock}.{symbol}', period=period, from_date = from_date, to_date = to_date, order='a')
+    resp = api.get_eod_historical_stock_market_data(symbol = f'{stock}.{symbol}', period=period, from_date = from_date, to_date = to_date, order=order)
 
     data_dict = {}
 
@@ -39,17 +41,18 @@ def format_data(data:dict):
     return df
 
 # %%
-model = load_model('lstm_model_test.keras')
+model = load_model('lstm_model_test.keras', compile=False)
+model.compile(optimizer='adam', loss='mse', metrics=['mae'])
 scaler = joblib.load('scaler.gz')
 
 # %%
-df : pd.DataFrame = format_data(data = get_data())
+data_dict = get_data(day_before=100, order='a')
+df= format_data(data_dict)
+df = df.iloc[-20:]
+print(len(df), df)
 
 # %%
-print(df)
-
-# %%
-def get_scaled_data(df: pd.DataFrame, scaler: MinMaxScaler, data_size:int=500, path:str=r"..\Data\AAPL_stock_prices.csv", delimeter: str = ',', from_end: bool = True, date_column: str = 'Date', target_column: str = 'Close'):
+def get_scaled_data(df, scaler: MinMaxScaler, target_column: str = 'Close'):
     target_column_index = df.columns.tolist().index(target_column)
     scaled_data = scaler.fit_transform(df)
     return scaled_data, target_column_index
@@ -64,11 +67,8 @@ def create_dataset(data: np.ndarray, time_step: int=10):
         # Define the range of input sequences
         end_ix = i + time_step
         
-        # Define the range of output sequences
-        out_end_ix = end_ix
-        
         # Ensure that the dataset is within bounds
-        if out_end_ix > len(data)-1:
+        if end_ix > len(data)-1:
             break
             
         # Extract input and output parts of the pattern
@@ -79,11 +79,57 @@ def create_dataset(data: np.ndarray, time_step: int=10):
     return np.array(X), data.shape[1], time_step
 
 X, feature_number, time_step = create_dataset(data=scaled_data)
-print(df)
-print(X[:2])
+print(len(X))
+print(len(df))
+print(X[:1])
 
 # %%
 predicted_data = model.predict(X)
 print(predicted_data)
 
+# %%
+# Inverse transform the predictions
+def update_data_to_inverse(predicted_data: np.ndarray, scaler: MinMaxScaler, target_column_index: int, feature_number: int):
+    new_dataset = np.zeros(shape=(len(predicted_data), feature_number))
+    new_dataset[:,target_column_index] = predicted_data.flatten()
+    return scaler.inverse_transform(new_dataset)[:, target_column_index].reshape(-1, 1)
 
+# %%
+predicted_data = update_data_to_inverse(predicted_data=predicted_data, scaler=scaler, target_column_index=target_column_index, feature_number=feature_number)
+
+# %%
+new_df = df[['Close']].iloc[-10:].copy()
+new_df['Predicted_close'] = predicted_data
+
+next_day = df.index.max() + pd.DateOffset(days=1)
+last_prediction = pd.DataFrame({'Close': [np.nan], 'Predicted_close': predicted_data[-1]}, index=[f"{next_day} 00:00:00"])
+desired_prediction = np.full((11,1), np.nan)
+new_df = pd.concat([new_df, last_prediction])
+desired_prediction[-2] = new_df['Close'][-2]
+desired_prediction[-1] = new_df['Predicted_close'][-1]
+desired_prediction = desired_prediction.reshape(-1,1)
+new_df['Desired_prediction'] = desired_prediction
+
+
+# Ensure the index is in datetime format
+new_df.index = pd.to_datetime(new_df.index)
+
+# Convert the datetime index to 'day-month' format
+new_df.index = new_df.index.strftime('%m-%d')
+
+print(new_df)
+
+#ORDER ??
+
+# %%
+df.to_csv(f'predictions.csv')
+
+# %%
+plt.plot(new_df['Close'], label='Close')
+plt.plot(new_df['Predicted_close'], label='Predicted Close')
+plt.plot(new_df['Desired_prediction'], label='Desired Prediction')
+plt.title('Predictons')
+plt.ylabel('Prices')
+plt.xlabel('Date')
+plt.legend()
+plt.savefig('figure.png')

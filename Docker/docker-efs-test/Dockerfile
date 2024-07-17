@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT ["sh", "-c", "python LSTM_Test.py \"$@\"", "--"]
+CMD [ "python", "main.py" ]
