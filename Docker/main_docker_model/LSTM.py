@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 import argparse, requests
@@ -27,7 +26,6 @@ parser.add_argument('--loss', type=str, default='mean_squared_error', help='Loss
 parser.add_argument('--metrics', nargs='+', default=['mse'], help='List of metrics')
 parser.add_argument('--layers', nargs='+', type=int, default=[256, 256], help='List of layers')
 args = parser.parse_args()
-
 
 RANDOM = args.random_state if args.random_state != 0 else randint(11,101)
 LOG = not args.no_log
@@ -109,21 +107,25 @@ def update_data_to_inverse(predicted_data: np.ndarray, scaler: MinMaxScaler, tar
     new_dataset[:,target_column_index] = predicted_data.flatten()
     return scaler.inverse_transform(new_dataset)[:, target_column_index].reshape(-1, 1)
 
-def log_save(number, time, model, scaler, epoch, layers_with_units, optimizer, loss_eval, loss, mae, test_mse, test_r2, df, train_mse = None, train_r2 = None):
+def log_save(plot: list, number, time, model, scaler, epoch, layers_with_units, optimizer, loss_eval, loss, mae, test_mse, test_r2, df, train_mse = None, train_r2 = None):
     save_models(number, model, scaler)
+    plot_results(plot[0][:, plot[1]], plot[2][:, plot[1]], plot[3], plot[4], number=number)
+    new_folder_path = join('Models', str(number))
     current_datetime = datetime.now()
     current_datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-    with open('Models\\log.txt', 'a') as file:
+    with open(f'{new_folder_path}\\log.txt', 'a') as file:
         file.write(f"{number} Train Results at {current_datetime_str}:")  
         file.write(f"\n    Elapsed Time: {time:.6f}")
+        file.write(f"\n    Url: {URL}")
         file.write(f"\n    Epoch: {epoch}")
+        file.write(f"\n    Random State: {RANDOM}")
         file.write(f"\n    Data Size: {len(df)}")
         file.write(f"\n    Layers: {layers_with_units}")
         file.write(f"\n    Optimizer: {optimizer}")
         file.write(f"\n    Loss: {loss}")
         file.write(f"\n    From Evaluations:\n        Loss: {loss_eval}\n        Mae: {mae}")
         file.write(f"\n    MSE:\n        Train MSE: {train_mse:.4f}\n        Test MSE: {test_mse:.4f}")
-        file.write(f"\n    R2\n        Train R2 Score: {train_r2:.4f}\n        Test R2 Score: {test_r2:.4f}\n\n")
+        file.write(f"\n    R2\n        Train R2 Score: {train_r2:.4f}\n        Test R2 Score: {test_r2:.4f}")
 
 def save_models(number, model, scaler):
     new_folder_path = join('Models', str(number))
@@ -173,7 +175,7 @@ def plot_results(Y_train, Y_test, train_predict, test_predict, number):
     plt.legend()
 
     plt.tight_layout()
-    if LOG: plt.savefig(join('Models', str(number), 'fig.png'))
+    if LOG: plt.savefig(join('Models', str(number), 'figure.png'))
 
 def run_model_train():
     start_time = time()
@@ -207,15 +209,16 @@ def run_model_train():
     elapsed_time = end_time - start_time
     number = check_number_availability(randint(10000000, 99999999))
     if LOG:
-        log_save(number=number, time=elapsed_time, model=model, scaler=scaler, epoch=EPOCH, layers_with_units=LAYERS, optimizer=OPTIMIZER, loss=LOSS, train_mse=train_mse, train_r2=train_r2,loss_eval = loss_eval ,mae = mae ,test_mse = test_mse ,test_r2 = test_r2 ,df = df)
-    
-    print(number)
-    print(f"{time_step=}, {X.shape=}, {(len(train_predict) + time_step)=}")
-    print(f"{test_predict.shape=}, {train_predict.shape=}, {scaled_data.shape=}")
-    print(f"{Y_train.shape=}, {Y_test.shape=}")
+        log_save(plot=[Y_train, target_column_index, Y_test, train_predict, test_predict], number=number, time=elapsed_time, model=model, scaler=scaler, epoch=EPOCH, layers_with_units=LAYERS, optimizer=OPTIMIZER, loss=LOSS, train_mse=train_mse, train_r2=train_r2,loss_eval = loss_eval ,mae = mae ,test_mse = test_mse ,test_r2 = test_r2 ,df = df)
 
-    plot_results(Y_train[:, target_column_index], Y_test[:, target_column_index], train_predict, test_predict, number=number)
-    
+    if not LOG:
+        print(f"{time_step=}, {X.shape=}, {(len(train_predict) + time_step)=}")
+        print(f"{test_predict.shape=}, {train_predict.shape=}, {scaled_data.shape=}")
+        print(f"{Y_train.shape=}, {Y_test.shape=}")
+        print(f"{elapsed_time=}\n{loss_eval=}\n{mae=}\n{test_mse=}\n{test_r2=}\n{train_mse=}\n{train_r2=}")
+    print("--------", number, "--------", sep="\n")
+        
+
     return 1
 
 if '__main__' == __name__:
