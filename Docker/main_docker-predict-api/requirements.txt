@@ -1,9 +1,10 @@
 requests==2.32.3
-keras==3.4.1
 matplotlib==3.9.1
 numpy==1.26.4
 pandas==2.2.2
 scikit-learn==1.5.1
-tensorflow==2.16.2
 eodhd==1.0.30
 fastapi==0.111.1
+keras==2.2.4
+tensorflow==1.15.0
+pillow==7.0.0

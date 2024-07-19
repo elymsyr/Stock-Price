@@ -1,10 +1,10 @@
 FROM python:3.10-slim
 
-WORKDIR /usr/src/app
+WORKDIR /predict-api-test/
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY ./app/ /predict-api-test/
 
-CMD [ "python", "main.py" ]
+CMD [ "fastapi", "run", "app/main.py", "--port", "80" ]
