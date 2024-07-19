@@ -1,38 +1,29 @@
-# %%
+
 import numpy as np
 import pandas as pd
 import argparse, requests
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, r2_score
 from keras import Sequential
 from sklearn.model_selection import train_test_split
 from keras.src.layers import LSTM, Dense
+from datetime import datetime
+from random import randint
+from os import scandir, makedirs
+from os.path import join
+from time import time
 import joblib
 
-# URL = 'https://raw.githubusercontent.com/elymsyr/Stock-Price/main/Data/AAPL_stock_prices.csv'
-
-# %%
-URL = None
-DATA_SIZE = None
-EPOCH = None
-BATCH_SIZE = None
-LAYERS = None
-OPTIMIZER = None
-LOSS = None 
-METRICS = None
-
-#%% 
 parser = argparse.ArgumentParser(description='Process some parameters.')
 parser.add_argument('--epoch', type=int, default=50, help='Number of epochs')
-parser.add_argument('--url', type=str, help='Url to csv data file')
+parser.add_argument('--url', type=str, default='https://raw.githubusercontent.com/elymsyr/Stock-Price/main/Data/AAPL_stock_prices.csv', help='Url to csv data file')
 parser.add_argument('--batch-size', type=int, default=1, help='Batch size')
 parser.add_argument('--data-size', type=int, help='Data size')
 parser.add_argument('--optimizer', type=str, default='adam', help='Optimizer type')
 parser.add_argument('--loss', type=str, default='mean_squared_error', help='Loss function')
 parser.add_argument('--metrics', nargs='+', default=['mse'], help='List of metrics')
 parser.add_argument('--layers', nargs='+', type=int, default=[256, 256], help='List of layers')
-
 args = parser.parse_args()
 
 EPOCH = args.epoch
@@ -44,16 +35,15 @@ METRICS = args.metrics
 DATA_SIZE = args.data_size
 URL = args.url
 
-print(f"URL: {URL}")
-print(f"DATA_SIZE: {DATA_SIZE}")
-print(f"EPOCH: {EPOCH}")
-print(f"BATCH_SIZE: {BATCH_SIZE}")
-print(f"LAYERS: {LAYERS}")
-print(f"OPTIMIZER: {OPTIMIZER}")
-print(f"LOSS: {LOSS}")
-print(f"METRICS: {METRICS}")
+# print(f"URL: {URL}")
+# print(f"DATA_SIZE: {DATA_SIZE}")
+# print(f"EPOCH: {EPOCH}")
+# print(f"BATCH_SIZE: {BATCH_SIZE}")
+# print(f"LAYERS: {LAYERS}")
+# print(f"OPTIMIZER: {OPTIMIZER}")
+# print(f"LOSS: {LOSS}")
+# print(f"METRICS: {METRICS}")
 
-# %%
 def get_df_from_url() -> pd.DataFrame|None:
     if URL != None:
         response = requests.get(URL)
@@ -71,8 +61,7 @@ def get_df_from_url() -> pd.DataFrame|None:
         else:
             print(f"Failed to download CSV file from {URL}. Status code: {response.status_code}")
     return None
-    
-# %%
+
 def get_df(delimeter: str = ',', from_end: bool = True, date_column: str = 'Date', target_column: str = 'Close') -> tuple[np.ndarray, MinMaxScaler, int, pd.DataFrame]:
     df: pd.DataFrame | None= get_df_from_url()
     if df is None:
@@ -91,7 +80,6 @@ def get_df(delimeter: str = ',', from_end: bool = True, date_column: str = 'Date
     scaled_data = scaler.fit_transform(df)
     return scaled_data, scaler, target_column_index, df
 
-# %%
 def create_dataset(data: np.ndarray, time_step: int=10):
     X, Y = [], []
     for i in range(len(data) - time_step):
@@ -113,7 +101,6 @@ def create_dataset(data: np.ndarray, time_step: int=10):
         Y.append(seq_y)
     return np.array(X), np.array(Y), data.shape[1], time_step
 
-# %%
 def create_model(input_shape: tuple, layers_with_units: list[int] = [128,128,64], optimizer: str = 'adam', loss: str = 'mean_squared_error', metrics: list[str]=['mse', 'mape']) -> Sequential:
     # Create the LSTM model
     model = Sequential()
@@ -124,31 +111,58 @@ def create_model(input_shape: tuple, layers_with_units: list[int] = [128,128,64]
     model.compile(optimizer = optimizer, loss = loss, metrics=metrics)
     return model
 
-# %%
-# Inverse transform the predictions
 def update_data_to_inverse(predicted_data: np.ndarray, scaler: MinMaxScaler, target_column_index: int, feature_number: int):
     new_dataset = np.zeros(shape=(len(predicted_data), feature_number))
     new_dataset[:,target_column_index] = predicted_data.flatten()
     return scaler.inverse_transform(new_dataset)[:, target_column_index].reshape(-1, 1)
 
-# %%
-
-def log(epoch, layers_with_units, optimizer, loss_eval, loss, mae, test_mse, test_r2, df, train_mse = None, train_r2 = None):
-    from datetime import datetime
+def log_save(time, model, scaler, epoch, layers_with_units, optimizer, loss_eval, loss, mae, test_mse, test_r2, df, train_mse = None, train_r2 = None):
+    number = check_number_availability(randint(10000000, 99999999))
+    save_models(number, model, scaler)
     current_datetime = datetime.now()
-    current_datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")    
-    with open('log.txt', 'a') as file:
-        file.write(f"Train Results at {current_datetime_str} with Epoch - {epoch} for {len(df)} data:")        
+    current_datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+    with open('Models\\log.txt', 'a') as file:
+        file.write(f"{number} Train Results at {current_datetime_str}:")  
+        file.write(f"\n    Elapsed Time: {time:.6f}")
+        file.write(f"\n    Epoch: {epoch}")
+        file.write(f"\n    Data Size: {len(df)}")
         file.write(f"\n    Layers: {layers_with_units}")
-        file.write(f"\n    Optimizer : {optimizer}")
+        file.write(f"\n    Optimizer: {optimizer}")
         file.write(f"\n    Loss: {loss}")
-        file.write(f"\n    Evaluations -> Loss_{loss_eval} Mae_{mae}")
-        file.write(f"\n    Train MSE: {train_mse:.4f}, Test MSE: {test_mse:.4f}")
-        file.write(f"\n    Train R2 Score: {train_r2:.4f}, Test R2 Score: {test_r2:.4f}\n\n")
-    return f"Train Results at {current_datetime_str} with Epoch - {epoch} for {len(df)} data::\n    Layers: {layers_with_units}\n    Optimizer : {optimizer}\n    Loss: {loss}\n    Evaluations -> Loss_{loss_eval} Mae_{mae}\n    Train MSE: {train_mse:.4f}, Test MSE: {test_mse:.4f}\n    Train R2 Score: {train_r2:.4f}, Test R2 Score: {test_r2:.4f}"
+        file.write(f"\n    From Evaluations:\n        Loss: {loss_eval}\n        Mae: {mae}")
+        file.write(f"\n    MSE:\n        Train MSE: {train_mse:.4f}\n        Test MSE: {test_mse:.4f}")
+        file.write(f"\n    R2\n        Train R2 Score: {train_r2:.4f}\n        Test R2 Score: {test_r2:.4f}\n\n")
+    return number
 
-# %%
+def save_models(number, model, scaler):
+    new_folder_path = join('Models', str(number))
+    try:
+        makedirs(new_folder_path)
+        joblib.dump(scaler, f'{new_folder_path}\\scaler.gz')
+        model.save(f'{new_folder_path}\\model.keras')
+        model.save(f'{new_folder_path}\\model.h5')
+    except:
+        joblib.dump(scaler, f'Models/unknown_number\\scaler.gz')
+        model.save(f'Models/unknown_number\\model.keras')
+        model.save(f'Models/unknown_number\\model.h5')
+    
+def check_number_availability(number: int):
+    try:
+        with scandir('Models') as entries:
+            existing_names = [entry.name for entry in entries]
+            while str(number) in existing_names:
+                number = randint(10000000, 99999999)
+            return number
+    except FileNotFoundError:
+        print("The directory does not exist.")
+    except PermissionError:
+        print("You do not have permissions to access this directory.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    
+
 def run_model_train():
+    start_time = time()
     scaled_data, scaler, target_column_index, df = get_df()
     X, Y, feature_number, time_step = create_dataset(data=scaled_data)
     # Split the data: 70% training, 15% validation, 15% testing
@@ -175,15 +189,16 @@ def run_model_train():
     train_r2 = r2_score(Y_train[:, target_column_index].reshape(-1, 1), train_predict)
     test_r2 = r2_score(Y_test[:, target_column_index].reshape(-1, 1), test_predict)
     
-    log_text = log(epoch=EPOCH, layers_with_units=LAYERS, optimizer=OPTIMIZER, loss=LOSS, train_mse=train_mse, train_r2=train_r2,loss_eval = loss_eval ,mae = mae ,test_mse = test_mse ,test_r2 = test_r2 ,df = df)
-    print(log_text)
+    end_time = time()
+    elapsed_time = end_time - start_time
+    number = log_save(time=elapsed_time, model=model, scaler=scaler, epoch=EPOCH, layers_with_units=LAYERS, optimizer=OPTIMIZER, loss=LOSS, train_mse=train_mse, train_r2=train_r2,loss_eval = loss_eval ,mae = mae ,test_mse = test_mse ,test_r2 = test_r2 ,df = df)
     
+    print(number)
     print(f"{time_step=}, {X.shape=}, {(len(train_predict) + time_step)=}")
     print(f"{test_predict.shape=}, {train_predict.shape=}, {scaled_data.shape=}")
-    joblib.dump(scaler, 'scaler.gz')
-    model.save('lstm_model_test.keras')
-    model.save('lstm_model_test.h5')
-    return 1
     
-# %%
-run_model_train()
+
+    return 1
+
+if '__main__' == __name__:
+    run_model_train()

@@ -1,0 +1,38 @@
+19293042 Train Results:
+    Epoch: 10
+    Data Size: 10000
+    Layers: [256, 256]
+    Optimizer: adam
+    Loss: mean_squared_error
+
+26263960 Train Results at 2024-07-19 23:49:44:
+    Epoch: 1
+    Data Size: 1000
+    Layers: [256, 256]
+    Optimizer: adam
+    Loss: mean_squared_error
+    From Evaluations:
+        Loss: 0.04156525805592537
+        Mae: 0.04156525805592537
+    MSE:
+        Train MSE: 41.8355
+        Test MSE: 40.5715
+    R2
+        Train R2 Score: 0.9308
+        Test R2 Score: 0.932548765492 Train Results at 2024-07-19 23:59:59:
+    Elapsed Time: 355.267363
+    Epoch: 10
+    Data Size: 10959
+    Layers: [256, 256]
+    Optimizer: adam
+    Loss: mean_squared_error
+    From Evaluations:
+        Loss: 0.00776941142976284
+        Mae: 0.00776941142976284
+    MSE:
+        Train MSE: 91.0593
+        Test MSE: 86.3139
+    R2
+        Train R2 Score: 0.9553
+        Test R2 Score: 0.9566
+
