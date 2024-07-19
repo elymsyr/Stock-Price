@@ -3,36 +3,71 @@
     Data Size: 10000
     Layers: [256, 256]
     Optimizer: adam
-    Loss: mean_squared_error
-
-26263960 Train Results at 2024-07-19 23:49:44:
+    Loss: mean_squared_error96073977 Train Results at 2024-07-20 00:36:10:
+    Elapsed Time: 21.377250
     Epoch: 1
-    Data Size: 1000
+    Data Size: 2000
     Layers: [256, 256]
     Optimizer: adam
     Loss: mean_squared_error
     From Evaluations:
-        Loss: 0.04156525805592537
-        Mae: 0.04156525805592537
+        Loss: 0.031571581959724426
+        Mae: 0.031571581959724426
     MSE:
-        Train MSE: 41.8355
-        Test MSE: 40.5715
+        Train MSE: 314.5968
+        Test MSE: 314.2803
     R2
-        Train R2 Score: 0.9308
-        Test R2 Score: 0.932548765492 Train Results at 2024-07-19 23:59:59:
-    Elapsed Time: 355.267363
-    Epoch: 10
-    Data Size: 10959
+        Train R2 Score: 0.9025
+        Test R2 Score: 0.9010
+
+43437498 Train Results at 2024-07-20 00:37:23:
+    Elapsed Time: 22.791124
+    Epoch: 1
+    Data Size: 2000
     Layers: [256, 256]
     Optimizer: adam
     Loss: mean_squared_error
     From Evaluations:
-        Loss: 0.00776941142976284
-        Mae: 0.00776941142976284
+        Loss: 0.03258761018514633
+        Mae: 0.03258761018514633
     MSE:
-        Train MSE: 91.0593
-        Test MSE: 86.3139
+        Train MSE: 84.4621
+        Test MSE: 83.8726
     R2
-        Train R2 Score: 0.9553
-        Test R2 Score: 0.9566
+        Train R2 Score: 0.9738
+        Test R2 Score: 0.9736
+
+47958697 Train Results at 2024-07-20 00:38:29:
+    Elapsed Time: 21.888008
+    Epoch: 1
+    Data Size: 2000
+    Layers: [256, 256]
+    Optimizer: adam
+    Loss: mean_squared_error
+    From Evaluations:
+        Loss: 0.031080245971679688
+        Mae: 0.031080245971679688
+    MSE:
+        Train MSE: 255.5448
+        Test MSE: 254.1835
+    R2
+        Train R2 Score: 0.9208
+        Test R2 Score: 0.9199
+
+25306071 Train Results at 2024-07-20 00:39:25:
+    Elapsed Time: 21.364130
+    Epoch: 1
+    Data Size: 2000
+    Layers: [256, 256]
+    Optimizer: adam
+    Loss: mean_squared_error
+    From Evaluations:
+        Loss: 0.032268326729536057
+        Mae: 0.032268326729536057
+    MSE:
+        Train MSE: 164.0598
+        Test MSE: 164.8782
+    R2
+        Train R2 Score: 0.9492
+        Test R2 Score: 0.9481
 

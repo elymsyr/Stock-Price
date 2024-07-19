@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 import argparse, requests
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, r2_score
 from keras import Sequential
@@ -17,6 +17,8 @@ import joblib
 
 parser = argparse.ArgumentParser(description='Process some parameters.')
 parser.add_argument('--epoch', type=int, default=50, help='Number of epochs')
+parser.add_argument('--random-state', type=int, default=42, help='Number of epochs')
+parser.add_argument('--no-log', action='store_true', help='Disable logging and saving model.')
 parser.add_argument('--url', type=str, default='https://raw.githubusercontent.com/elymsyr/Stock-Price/main/Data/AAPL_stock_prices.csv', help='Url to csv data file')
 parser.add_argument('--batch-size', type=int, default=1, help='Batch size')
 parser.add_argument('--data-size', type=int, help='Data size')
@@ -26,6 +28,9 @@ parser.add_argument('--metrics', nargs='+', default=['mse'], help='List of metri
 parser.add_argument('--layers', nargs='+', type=int, default=[256, 256], help='List of layers')
 args = parser.parse_args()
 
+
+RANDOM = args.random_state if args.random_state != 0 else randint(11,101)
+LOG = not args.no_log
 EPOCH = args.epoch
 BATCH_SIZE = args.batch_size
 LAYERS = args.layers
@@ -35,28 +40,17 @@ METRICS = args.metrics
 DATA_SIZE = args.data_size
 URL = args.url
 
-# print(f"URL: {URL}")
-# print(f"DATA_SIZE: {DATA_SIZE}")
-# print(f"EPOCH: {EPOCH}")
-# print(f"BATCH_SIZE: {BATCH_SIZE}")
-# print(f"LAYERS: {LAYERS}")
-# print(f"OPTIMIZER: {OPTIMIZER}")
-# print(f"LOSS: {LOSS}")
-# print(f"METRICS: {METRICS}")
-
 def get_df_from_url() -> pd.DataFrame|None:
     if URL != None:
         response = requests.get(URL)
         if response.status_code == 200:
             # Save the downloaded CSV file
-            with open('downloaded_data.csv', 'wb') as f:
+            with open('last_downloaded_data.csv', 'wb') as f:
                 f.write(response.content)
             print(f"CSV file downloaded successfully from {URL}")
 
             # Read CSV file using pandas
-            df = pd.read_csv('downloaded_data.csv')
-            # Process the dataframe as needed
-            print(df.head())  # Example: Print the first few rows of the dataframe
+            df = pd.read_csv('last_downloaded_data.csv')
             return df
         else:
             print(f"Failed to download CSV file from {URL}. Status code: {response.status_code}")
@@ -72,7 +66,6 @@ def get_df(delimeter: str = ',', from_end: bool = True, date_column: str = 'Date
     df.drop(columns=[date_column], inplace=True)
     df.index = dates #type:ignore
     target_column_index = df.columns.tolist().index(target_column)
-    print('Founded df (get_df): \n', df)
     try: 
         scaler = joblib.load('scaler.gz')
     except:
@@ -116,8 +109,7 @@ def update_data_to_inverse(predicted_data: np.ndarray, scaler: MinMaxScaler, tar
     new_dataset[:,target_column_index] = predicted_data.flatten()
     return scaler.inverse_transform(new_dataset)[:, target_column_index].reshape(-1, 1)
 
-def log_save(time, model, scaler, epoch, layers_with_units, optimizer, loss_eval, loss, mae, test_mse, test_r2, df, train_mse = None, train_r2 = None):
-    number = check_number_availability(randint(10000000, 99999999))
+def log_save(number, time, model, scaler, epoch, layers_with_units, optimizer, loss_eval, loss, mae, test_mse, test_r2, df, train_mse = None, train_r2 = None):
     save_models(number, model, scaler)
     current_datetime = datetime.now()
     current_datetime_str = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
@@ -132,7 +124,6 @@ def log_save(time, model, scaler, epoch, layers_with_units, optimizer, loss_eval
         file.write(f"\n    From Evaluations:\n        Loss: {loss_eval}\n        Mae: {mae}")
         file.write(f"\n    MSE:\n        Train MSE: {train_mse:.4f}\n        Test MSE: {test_mse:.4f}")
         file.write(f"\n    R2\n        Train R2 Score: {train_r2:.4f}\n        Test R2 Score: {test_r2:.4f}\n\n")
-    return number
 
 def save_models(number, model, scaler):
     new_folder_path = join('Models', str(number))
@@ -159,15 +150,38 @@ def check_number_availability(number: int):
         print("You do not have permissions to access this directory.")
     except Exception as e:
         print(f"An error occurred: {e}")
-    
+        
+def plot_results(Y_train, Y_test, train_predict, test_predict, number):
+    plt.figure(figsize=(16, 10))
+
+    # Plot training data and predictions
+    plt.subplot(2, 1, 1)
+    plt.plot(Y_train, 'b-', label='Training Data')
+    plt.plot(train_predict, 'r-', label='Training Prediction')
+    plt.title('Training Data vs Training Prediction')
+    plt.xlabel('Index')
+    plt.ylabel('Value')
+    plt.legend()
+
+    # Plot test data and predictions
+    plt.subplot(2, 1, 2)
+    plt.plot(Y_test, 'b-', label='Test Data')
+    plt.plot(test_predict, 'r-', label='Test Prediction')
+    plt.title('Test Data vs Test Prediction')
+    plt.xlabel('Index')
+    plt.ylabel('Value')
+    plt.legend()
+
+    plt.tight_layout()
+    if LOG: plt.savefig(join('Models', str(number), 'fig.png'))
 
 def run_model_train():
     start_time = time()
     scaled_data, scaler, target_column_index, df = get_df()
     X, Y, feature_number, time_step = create_dataset(data=scaled_data)
     # Split the data: 70% training, 15% validation, 15% testing
-    X_train, X_temp, Y_train, Y_temp = train_test_split(X, Y, test_size=0.3, random_state=42)
-    X_val, X_test, Y_val, Y_test = train_test_split(X_temp, Y_temp, test_size=0.5, random_state=42)
+    X_train, X_temp, Y_train, Y_temp = train_test_split(X, Y, test_size=0.3, random_state=RANDOM)
+    X_val, X_test, Y_val, Y_test = train_test_split(X_temp, Y_temp, test_size=0.5, random_state=RANDOM)
 
     model = create_model(input_shape=(X_train.shape[1], feature_number), layers_with_units=LAYERS, optimizer=OPTIMIZER, loss=LOSS, metrics=METRICS) # type: ignore
     # Train the model
@@ -191,14 +205,28 @@ def run_model_train():
     
     end_time = time()
     elapsed_time = end_time - start_time
-    number = log_save(time=elapsed_time, model=model, scaler=scaler, epoch=EPOCH, layers_with_units=LAYERS, optimizer=OPTIMIZER, loss=LOSS, train_mse=train_mse, train_r2=train_r2,loss_eval = loss_eval ,mae = mae ,test_mse = test_mse ,test_r2 = test_r2 ,df = df)
+    number = check_number_availability(randint(10000000, 99999999))
+    if LOG:
+        log_save(number=number, time=elapsed_time, model=model, scaler=scaler, epoch=EPOCH, layers_with_units=LAYERS, optimizer=OPTIMIZER, loss=LOSS, train_mse=train_mse, train_r2=train_r2,loss_eval = loss_eval ,mae = mae ,test_mse = test_mse ,test_r2 = test_r2 ,df = df)
     
     print(number)
     print(f"{time_step=}, {X.shape=}, {(len(train_predict) + time_step)=}")
     print(f"{test_predict.shape=}, {train_predict.shape=}, {scaled_data.shape=}")
-    
+    print(f"{Y_train.shape=}, {Y_test.shape=}")
 
+    plot_results(Y_train[:, target_column_index], Y_test[:, target_column_index], train_predict, test_predict, number=number)
+    
     return 1
 
 if '__main__' == __name__:
+    print(f"URL: {URL}")
+    print(f"DATA_SIZE: {DATA_SIZE}")
+    print(f"EPOCH: {EPOCH}")
+    print(f"BATCH_SIZE: {BATCH_SIZE}")
+    print(f"LAYERS: {LAYERS}")
+    print(f"OPTIMIZER: {OPTIMIZER}")
+    print(f"LOSS: {LOSS}")
+    print(f"METRICS: {METRICS}")
+    print(f"RANDOM STATE: {RANDOM}")
+    print(f"LOG: {LOG}")
     run_model_train()
