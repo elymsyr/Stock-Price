@@ -1,0 +1,18 @@
+93165504 Train Results at 2024-07-20 22:56:51:
+    Elapsed Time: 21.797546
+    Url: https://raw.githubusercontent.com/elymsyr/Stock-Price/main/Docs/Data/AAPL_stock_prices.csv
+    Epoch: 2
+    Random State: 42
+    Data Size: 500
+    Layers: [256, 256]
+    Optimizer: adam
+    Loss: mean_squared_error
+    From Evaluations:
+        Loss: 0.02835135906934738
+        Mae: 0.02835135906934738
+    MSE:
+        Train MSE: 37.7687
+        Test MSE: 43.0426
+    R2
+        Train R2 Score: 0.8885
+        Test R2 Score: 0.8829
