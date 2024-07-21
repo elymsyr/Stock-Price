@@ -5,3 +5,14 @@ FORMATIONS = {
 }
 
 # crate a function that gets the data (monthly or yearly or something else)  and find the best formation that fit.
+
+import numpy as np
+from scipy.spatial.distance import euclidean
+
+from fastdtw import fastdtw # type: ignore
+
+x = np.array([[1.1], [2.2], [3.3], [4.4], [5.5]])
+y = np.array([[2.2], [3.3], [4.4]])
+
+distance, path = fastdtw(x, y, dist=euclidean)
+print(distance, path)
