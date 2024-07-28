@@ -51,7 +51,7 @@ def plot_patterns(main_array, found_patterns, patterns):
         pattern_length = len(patterns[pattern_index])
         for idx in indices:
             pattern_to_plot = main_array[idx:idx + pattern_length]
-            plt.plot(range(idx, idx + pattern_length), pattern_to_plot, 
+            plt.plot(range(idx, idx + pattern_length), scale_list(patterns[pattern_index], min(pattern_to_plot), max(pattern_to_plot)), 
                      label=f'Pattern {pattern_index+1}', color=colors[pattern_index % len(colors)])
     
     plt.legend()
@@ -61,13 +61,14 @@ def plot_patterns(main_array, found_patterns, patterns):
     plt.show()
 
 # Example usage
-main_array = np.array([0.9, 0.1, 0.9, 0.1, 0.5, 0.1, 0.12, 0.12, 0.09, 0.18, 0.1, 0.12, 0.09, 0.18, 0.02, 0.1, 0.9, 0.45, 0.23, 0.1, 0.30, 0.6, 0.9, 0.6, 0.3, 0.1, 0.02, 0.58, 0.02, 1.0, 0.12, 0.09, 0.18, 0.02, 0.1,  0.02, 0.1, 0.02, 0.58]).reshape(-1, 1)
-pattern1 = np.array([0.9, 0.1, 0.5, 0.1, 0.29, 0.1]).reshape(-1, 1)
-pattern2 = np.array([0.9, 0.1, 0.9, 0.1]).reshape(-1, 1)
+main_array = np.array([0.9, 0.1, 0.5, 0.1, 0.12, 0.12, 0.09, 0.18, 0.1, 0.12, 0.86, 0.43, 0.98, 0.27, 0.09, 0.18, 0.02, 0.1, 0.9, 0.45, 0.23, 0.1, 0.30, 0.6, 0.9, 0.6, 0.3, 0.1, 0.02, 0.58, 0.02, 1.0, 0.12, 0.09, 0.18, 0.02, 0.1,  0.02, 0.1, 0.02, 0.58]).reshape(-1, 1)
+pattern1 = np.array([0.9, 0.1, 0.5, 0.1]).reshape(-1, 1)
+pattern2 = np.array([0.12, 0.86, 0.43, 0.98]).reshape(-1, 1)
+pattern3 = np.array([0.18, 0.02, 0.1, 0.9]).reshape(-1, 1)
 
-patterns = [pattern1, pattern2]
+patterns = [pattern1, pattern2, pattern3]
 
-found_patterns = find_patterns(main_array, *patterns, threshold=1)
+found_patterns = find_patterns(main_array, *patterns, data_size=4)
 print("Found patterns:", found_patterns)
 
 # Plotting the patterns
