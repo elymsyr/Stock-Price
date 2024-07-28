@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
 
 def generate_time_series(data_points, start_time='2024-01-01', frequency = 'ME'):
     """
@@ -56,20 +57,13 @@ def interpolate_time_series(time_series, daily_volatility=0.025):
     
     return interpolated_df
 
-# Generate the original time series
-data_points = np.random.uniform(100, 200, 12)  # 12 points, representing monthly values
-time_series = generate_time_series(data_points)
-
-# Interpolate the time series to generate daily data points
-interpolated_time_series = interpolate_time_series(time_series)
-
-# Plotting the interpolated time series data
-plt.figure(figsize=(10, 5))
-plt.plot(interpolated_time_series['Timestamp'], interpolated_time_series['Value'], label='Interpolated Data', linestyle='-', color='gray')
-plt.scatter(time_series['Timestamp'], time_series['Value'], color='black', label='Original Data Points', marker='o')
-plt.title('Interpolated Time Series with Original Data Points')
-plt.xlabel('Timestamp')
-plt.ylabel('Value')
-plt.legend()
-plt.grid(True)
-plt.show()
+def find_local_extrema(data, time, distance):
+    # Find indices of local maxima
+    maxima_indices, _ = find_peaks(data, distance=distance)
+    # Find indices of local minima by inverting the data
+    minima_indices, _ = find_peaks([-x for x in data], distance=distance)
+    
+    maxima = [(time[i], data[i]) for i in maxima_indices]
+    minima = [(time[i], data[i]) for i in minima_indices]
+    
+    return maxima, minima
