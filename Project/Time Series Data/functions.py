@@ -57,7 +57,6 @@ def interpolate_time_series(time_series, daily_volatility=0.025):
     interpolated_df = pd.DataFrame(data)
     interpolated_df.set_index("Timestamp", inplace = True)
     interpolated_df.rename(columns={'Value': 'close'}, inplace=True)
-    print(interpolated_df)
     return interpolated_df
 
 def find_local_extrema(data, time, distance):
