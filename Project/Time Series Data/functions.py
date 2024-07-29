@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.signal import savgol_filter
 from scipy.signal import find_peaks
 
 def generate_time_series(data_points, start_time='2024-01-01', frequency = 'ME'):
@@ -54,12 +55,14 @@ def interpolate_time_series(time_series, daily_volatility=0.025):
             data.append(item)
     
     interpolated_df = pd.DataFrame(data)
-    
+    interpolated_df.set_index("Timestamp", inplace = True)
+    interpolated_df.rename(columns={'Value': 'close'}, inplace=True)
+    print(interpolated_df)
     return interpolated_df
 
 def find_local_extrema(data, time, distance):
     # Find indices of local maxima
-    maxima_indices, _ = find_peaks(data, distance=distance)
+    maxima_indices, _ = find_peaks(data, distance=distance, width = 1)
     # Find indices of local minima by inverting the data
     minima_indices, _ = find_peaks([-x for x in data], distance=distance)
     
@@ -67,3 +70,9 @@ def find_local_extrema(data, time, distance):
     minima = [(time[i], data[i]) for i in minima_indices]
     
     return maxima, minima
+
+def find_extramas(data, window_length = 20, polyorder = 5, distance = 10, width = 1):
+    data["close_smooth"] = savgol_filter(data.close, window_length, polyorder)
+    peaks_idx, _ = find_peaks(data.close_smooth, distance = distance, width = width) # prominence=df.atr.iloc[-1]
+    troughs_idx, _ = find_peaks(-1*data.close_smooth, distance = distance, width = width) # prominence=df.atr.iloc[-1]
+    return peaks_idx, troughs_idx
